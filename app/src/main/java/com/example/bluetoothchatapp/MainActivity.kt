@@ -3,6 +3,8 @@ package com.example.bluetoothchatapp
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothProfile
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -54,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -98,11 +101,39 @@ class MainActivity : ComponentActivity() {
             theDevices[device.name] = device.address
         }
 
+
+
         // TODO: Use this to check if we can get something from it
         Log.i("ABC", "Devices: " + bluetoothAdapter.bondedDevices)
 
         Log.i("ABC", theDevices.toString())
         Toast.makeText(this, bluetoothAdapter.address, Toast.LENGTH_LONG).show()
+
+        val connectedDevice: BluetoothDevice? = getCurrentConnectedBluetoothDevice(this)
+
+        if (connectedDevice != null) {
+            val deviceName = if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return
+            } else {
+
+            }
+            connectedDevice.name
+            val deviceAddress = connectedDevice.address
+            println("Connected Device Name: $deviceName, Address: $deviceAddress")
+        } else {
+            println("No device currently connected.")
+        }
     }
 
     fun checkPermissions(): Boolean {
@@ -161,6 +192,40 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    fun getCurrentConnectedBluetoothDevice(context: Context): BluetoothDevice? {
+        val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        val bluetoothManager = bluetoothAdapter?.getProfileProxy(this, object : BluetoothProfile.ServiceListener {
+            override fun onServiceDisconnected(profile: Int) {}
+
+            override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
+                if (profile == BluetoothProfile.A2DP) {
+                    val connectedDevices: List<BluetoothDevice>? = proxy.connectedDevices
+                    if (!connectedDevices.isNullOrEmpty()) {
+                        if (ActivityCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.BLUETOOTH_CONNECT
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            // TODO: Consider calling
+                            //    ActivityCompat#requestPermissions
+                            // here to request the missing permissions, and then overriding
+                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                            //                                          int[] grantResults)
+                            // to handle the case where the user grants the permission. See the documentation
+                            // for ActivityCompat#requestPermissions for more details.
+                            return
+                        }
+                        Global.connectedDevice = mapOf(connectedDevices[0].name to connectedDevices[0].address)
+                        // Perform any necessary actions with the connected device
+                    }
+                }
+                bluetoothAdapter.closeProfileProxy(profile, proxy)
+            }
+        }, BluetoothProfile.A2DP)
+
+        return null
+    }
 }
 
 @Composable
@@ -183,6 +248,9 @@ fun NavigationAppHost(navController: NavHostController) {
 @Composable
 fun MainPage(navController: NavHostController) {
     val context = LocalContext.current
+
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -210,27 +278,33 @@ fun MainPage(navController: NavHostController) {
                 color = Color.Gray,
                 fontSize = 12.sp
             )
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(30.dp)
+            if (Global.connectedDevice.isEmpty()) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(30.dp)
 
-            ) {
-                IconButton(
-                    onClick = {
-                        val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-                        context.startActivity(intent)
-                    },
-                    Modifier.align(Alignment.Center)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "",
-                        tint = Color.Gray,
-                        modifier = Modifier
-                            .scale(4f)
-                            .blur(1.dp)
-                    )
+                    IconButton(
+                        onClick = {
+                            val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
+                            context.startActivity(intent)
+                        },
+                        Modifier.align(Alignment.Center)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "",
+                            tint = Color.Gray,
+                            modifier = Modifier
+                                .scale(4f)
+                                .blur(1.dp)
+                        )
+                    }
+                }
+            } else {
+                for ((k, v) in Global.connectedDevice) {
+                    DeviceCapsule(navController, name = k, macAddress = v)
                 }
             }
             Text(
