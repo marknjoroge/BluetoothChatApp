@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Bluetooth Chat App</string>
+    <string name="bluetooth_not_supported">Bluetooth not supported</string>
+    <string name="ble_not_supported">BLE not supported</string>
+</resources>
