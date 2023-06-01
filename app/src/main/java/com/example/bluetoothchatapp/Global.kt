@@ -6,6 +6,6 @@ import androidx.lifecycle.MutableLiveData
 class Global : Application() {
     companion object {
         @JvmField
-        var connectedDevice: Map<String, String> = TODO()
+        var connectedDevice: Map<String, String> = mapOf("" to "")
     }
 }

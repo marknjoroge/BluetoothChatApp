@@ -15,8 +15,7 @@ const val MESSAGE_WRITE: Int = 1
 const val MESSAGE_TOAST: Int = 2
 // ... (Add other message types here as needed.)
 
-class MyBluetoothService(
-    // handler that gets info from Bluetooth service
+class BTService(
     private val handler: Handler
 ) {
 
@@ -42,7 +41,8 @@ class MyBluetoothService(
                 // Send the obtained bytes to the UI activity.
                 val readMsg = handler.obtainMessage(
                     MESSAGE_READ, numBytes, -1,
-                    mmBuffer)
+                    mmBuffer
+                )
                 readMsg.sendToTarget()
             }
         }
@@ -66,7 +66,8 @@ class MyBluetoothService(
 
             // Share the sent message with the UI activity.
             val writtenMsg = handler.obtainMessage(
-                MESSAGE_WRITE, -1, -1, mmBuffer)
+                MESSAGE_WRITE, -1, -1, mmBuffer
+            )
             writtenMsg.sendToTarget()
         }
 

@@ -1,5 +1,8 @@
 package com.example.bluetoothchatapp
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,7 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
@@ -22,6 +30,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,16 +78,24 @@ fun populateMessages() {
     messages.add("Haha, that's a good one too!")
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatPage(navController: NavHostController, macAddress: String) {
-//    populateMessages()
-    var myText by remember { mutableStateOf("") }
+
+    populateMessages()
+    val context = LocalContext.current
+    val chatActivity = ChatActivity(macAddress, context = context)
+    var myText by remember { mutableStateOf("Yoo whatsup") }
+
+//    var messages by remember { mutableStateOf(chatActivity.messages) }
+
+    val listState = rememberLazyListState()
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "Chat with")
+                    Text(text = "Chat with $macAddress")
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
@@ -94,22 +111,31 @@ fun ChatPage(navController: NavHostController, macAddress: String) {
                     .background(Color.White)
                     .padding(it)
             ) {
-                Column(
-                    Modifier
-                        .padding(horizontal = 20.dp, vertical = 60.dp)
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .padding(bottom = 80.dp)
+                        .padding(horizontal = 20.dp)
                 ) {
-                    for (message in messages) {
-                        val parts = message.split("·")
-
-                        if (parts.size == 3) {
-                            val time = parts[0].trim()
-                            val address = parts[1].trim()
-                            val text = parts[2].trim()
-                            ChatBubble(address = address, message = text)
-                        } else {
-                            println("Invalid sentence format")
-                        }
+//                    for ((k, v) in messages) {
+//                        val parts = v.split(" · ")
+//
+//                        if (parts.size == 3) {
+//                            val address = parts[0].trim()
+//                            val text = parts[1].trim()
+//                            ChatBubble(address = address, message = text)
+//                        } else {
+//                            println("Invalid sentence format")
+//                        }
+//                    }
+                    items(messages) {message ->
+//                        for (message in messages) {
+                            ChatBubble(address = "121212121212", message = message)
+//                        }
                     }
+                }
+                LaunchedEffect(messages.size) {
+                    listState.animateScrollToItem(messages.size)
                 }
                 Box(
                     modifier = Modifier
@@ -126,17 +152,23 @@ fun ChatPage(navController: NavHostController, macAddress: String) {
                         OutlinedTextField (
                             value = myText,
                             modifier = Modifier.height(60.dp),
-                            onValueChange = {newText -> myText = newText },
+                            placeholder = {Text("New message")},
+                            onValueChange = {newText: String -> myText = newText }
                         )
                         IconButton(
-                            onClick = {},
-                            modifier = Modifier.height(60.dp),
+                            onClick = {
+                                chatActivity.sendText(myText)
+//                                messages = chatActivity.messages
+                                myText = ""
+                            },
+//                            modifier = Modifier.height(80.dp),
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Send,
                                 contentDescription = "Send",
                                 modifier = Modifier
-                                    .height(60.dp)
+                                    .size(70.dp),
+                                tint = myBubbleColor
                             )
                         }
                     }
@@ -155,10 +187,11 @@ fun ChatBubble(address: String, message: String) {
         bubbleColor = theirBubbleColor
         textColor = theirTextColor
     }
+
     Column(
         modifier = Modifier
             .padding(vertical = 7.dp)
-            .defaultMinSize(minHeight = 70.dp, minWidth = 100.dp)
+            .defaultMinSize(minHeight = 60.dp, minWidth = 100.dp)
             .clip(RoundedCornerShape(10.dp))
             .background(bubbleColor)
             .padding(13.dp)
@@ -176,6 +209,7 @@ fun ChatBubble(address: String, message: String) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun Preview() {
