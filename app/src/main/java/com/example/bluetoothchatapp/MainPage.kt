@@ -1,5 +1,7 @@
 package com.example.bluetoothchatapp
 
+import android.content.Intent
+import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -58,7 +60,7 @@ fun MainPage(navController: NavHostController) {
                 .padding(horizontal = 20.dp, vertical = 60.dp)
         ) {
             Text(
-                text = "Connect to a Device",
+                "Connect to a Device",
                 Modifier
                     .fillMaxWidth()
                     .padding(vertical = 15.dp),
@@ -80,13 +82,13 @@ fun MainPage(navController: NavHostController) {
                         .padding(30.dp)
                 ) {
                     IconButton(
-//                        onClick = {
-//                            val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-//                            context.startActivity(intent)
-//                        },
                         onClick = {
-                            navController.navigate(Routes.ChatPage.createRoute("macAddress"))
+                            val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
+                            context.startActivity(intent)
                         },
+//                        onClick = {
+//                            navController.navigate(Routes.ChatPage.createRoute("macAddress"))
+//                        },
                         Modifier.align(Alignment.Center)
                     ) {
                         Icon(
@@ -115,24 +117,6 @@ fun MainPage(navController: NavHostController) {
                 DeviceCapsule(navController, name = k, macAddress = v)
             }
         }
-//        Box(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .background(Color.White)
-//                .padding(horizontal = 20.dp)
-//                .align(Alignment.BottomCenter)
-//        ) {
-//            Button(
-//                onClick = {
-//                    val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-//                    context.startActivity(intent)
-//                },
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//            ) {
-//                Text(text = "Search for open connections")
-//            }
-//        }
     }
 }
 
@@ -152,40 +136,10 @@ fun DeviceCapsule(navController: NavHostController, name: String = "", macAddres
             .fillMaxWidth()
             .padding(20.dp)
     ) {
-//        Row(
-//            Modifier.fillMaxWidth(),
-//            horizontalArrangement = Arrangement.SpaceBetween,
-//            verticalAlignment = Alignment.Top
-//        ) {
         Text(
             text = name,
             color = Color.DarkGray
         )
-//            IconButton(
-//                onClick = { expanded = !expanded },
-//                modifier = Modifier.padding(0.dp),
-//            ) {
-//                Icon(
-//                    modifier = Modifier.padding(0.dp),
-//                    imageVector = Icons.Default.MoreVert,
-//                    contentDescription = "More",
-//                    tint = Color.Gray,
-//                )
-//            }
-//            DropdownMenu(
-//                expanded = expanded,
-//                onDismissRequest = { expanded = false },
-//            ) {
-//                DropdownMenuItem(
-//                    text = { Text("Load") },
-//                    onClick = { Toast.makeText(context, "Load", Toast.LENGTH_SHORT).show() }
-//                )
-//                DropdownMenuItem(
-//                    text = { Text("Save") },
-//                    onClick = { Toast.makeText(context, "Save", Toast.LENGTH_SHORT).show() }
-//                )
-//            }
-//        }
         Text(
             text = macAddress,
             color = Color.Gray,

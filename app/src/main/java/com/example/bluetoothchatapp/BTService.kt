@@ -1,7 +1,15 @@
+import android.Manifest
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothSocket
+import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import androidx.core.app.ActivityCompat
+import com.example.bluetoothchatapp.Global
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -19,7 +27,47 @@ class BTService(
     private val handler: Handler
 ) {
 
-    private inner class ConnectedThread(private val mmSocket: BluetoothSocket) : Thread() {
+    fun getCurrentConnectedBluetoothDevice(context: Context): BluetoothDevice? {
+        val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        val bluetoothManager = bluetoothAdapter?.getProfileProxy(context, object : BluetoothProfile.ServiceListener {
+            override fun onServiceDisconnected(profile: Int) {}
+
+            override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
+                if (profile == BluetoothProfile.A2DP) {
+                    val connectedDevices: List<BluetoothDevice>? = proxy.connectedDevices
+                    if (!connectedDevices.isNullOrEmpty()) {
+                        if (ActivityCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.BLUETOOTH_CONNECT
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            // TODO: Consider calling
+                            //    ActivityCompat#requestPermissions
+                            // here to request the missing permissions, and then overriding
+                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                            //                                          int[] grantResults)
+                            // to handle the case where the user grants the permission. See the documentation
+                            // for ActivityCompat#requestPermissions for more details.
+                            return
+                        }
+                        Global.connectedDevice = mapOf(connectedDevices[0].name to connectedDevices[0].address)
+                        // Perform any necessary actions with the connected device
+                    }
+                }
+                bluetoothAdapter.closeProfileProxy(profile, proxy)
+            }
+        }, BluetoothProfile.A2DP)
+
+        return null
+    }
+
+    lateinit var connectedThread: ConnectedThread
+
+    init {
+        connectedThread 
+    }
+
+    inner class ConnectedThread(private val mmSocket: BluetoothSocket) : Thread() {
 
         private val mmInStream: InputStream = mmSocket.inputStream
         private val mmOutStream: OutputStream = mmSocket.outputStream
@@ -79,5 +127,18 @@ class BTService(
                 Log.e(TAG, "Could not close the connect socket", e)
             }
         }
+    }
+
+    fun checkSocketConnection() {
+
+    }
+
+    fun sendData() {
+
+    }
+
+    fun startThread() {
+
+//        ConnectedThread().start()
     }
 }

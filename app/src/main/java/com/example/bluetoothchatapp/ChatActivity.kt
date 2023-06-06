@@ -1,12 +1,13 @@
 package com.example.bluetoothchatapp
 
 import BTService
+import MESSAGE_READ
+import MESSAGE_TOAST
+import MESSAGE_WRITE
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.os.Build
 import android.os.Handler
-import android.os.HandlerThread
-import android.util.Log
 import androidx.annotation.RequiresApi
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -20,16 +21,34 @@ class ChatActivity(theirMacAddress: String, context: Context) {
 
     private var btService: BTService? = null
 
-//    val handlerThread = HandlerThread("MyHandlerThread")
+    val handler = Handler(Handler.Callback { msg ->
+        // Handle messages received from the service
+        when (msg.what) {
+            MESSAGE_READ -> {
+                // Process the received data
+                val data = msg.obj as ByteArray
+                // Update UI with received data
+            }
+            MESSAGE_WRITE -> {
+                // Handle write operation completed
+            }
+            MESSAGE_TOAST -> {
+                // Handle toast message from service
+                val toastMessage = msg.data.getString("toast")
+                // Display toast message
+            }
+        }
+        true
+    })
 
     init {
-        val handler = Handler()
+        btService = BTService(handler)
         localContext = context
         macAddress = theirMacAddress
         btService = BTService(handler)
-    }
 
-    var handler = Handler()
+        btService
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun getTime(): String? {
@@ -41,6 +60,7 @@ class ChatActivity(theirMacAddress: String, context: Context) {
     @RequiresApi(Build.VERSION_CODES.O)
     fun sendText(text: String) {
         addText(text)
+
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

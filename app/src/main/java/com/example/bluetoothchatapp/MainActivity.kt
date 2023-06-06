@@ -77,6 +77,7 @@ class MainActivity : ComponentActivity() {
         val connectedDevice: BluetoothDevice? = getCurrentConnectedBluetoothDevice(this)
 
         if (connectedDevice != null) {
+            Log.i(ABC_TAG, "Connected ${connectedDevice.toString()}")
             val deviceName = if (ActivityCompat.checkSelfPermission(
                     this,
                     Manifest.permission.BLUETOOTH_CONNECT
@@ -95,9 +96,9 @@ class MainActivity : ComponentActivity() {
             }
             connectedDevice.name
             val deviceAddress = connectedDevice.address
-            println("Connected Device Name: $deviceName, Address: $deviceAddress")
+            Log.i(ABC_TAG, "Connected Device Name: $deviceName, Address: $deviceAddress")
         } else {
-            println("No device currently connected.")
+            Log.i(ABC_TAG, "Connected Device Name: none")
         }
     }
 
@@ -181,6 +182,7 @@ class MainActivity : ComponentActivity() {
                             // for ActivityCompat#requestPermissions for more details.
                             return
                         }
+                        Log.d(ABC_TAG, "Connected: ${connectedDevices.size}")
                         Global.connectedDevice = mapOf(connectedDevices[0].name to connectedDevices[0].address)
                         // Perform any necessary actions with the connected device
                     }
