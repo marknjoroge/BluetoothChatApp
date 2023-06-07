@@ -1,5 +1,6 @@
 package com.example.bluetoothchatapp
 
+import android.bluetooth.BluetoothDevice
 import android.content.Intent
 import android.provider.Settings
 import android.widget.Toast
@@ -46,6 +47,7 @@ import androidx.navigation.NavHostController
 
 @Composable
 fun MainPage(navController: NavHostController) {
+    var device by remember { mutableStateOf(Global.connectedBluetoothDevice) }
     val context = LocalContext.current
 
     Box(
@@ -70,25 +72,25 @@ fun MainPage(navController: NavHostController) {
                 color = Color.DarkGray
             )
             Text(
-                text = "Connected Devices",
+                text = "Connected Device",
                 Modifier.padding(top = 30.dp, bottom = 5.dp),
                 color = Color.Gray,
                 fontSize = 12.sp
             )
-            if (Global.connectedDevice.size <= 1) {
+            if (Global.connectedDevice.isEmpty()) {
                 Box(
                     Modifier
                         .fillMaxWidth()
                         .padding(30.dp)
                 ) {
                     IconButton(
-                        onClick = {
-                            val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-                            context.startActivity(intent)
-                        },
 //                        onClick = {
-//                            navController.navigate(Routes.ChatPage.createRoute("macAddress"))
+//                            val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
+//                            context.startActivity(intent)
 //                        },
+                        onClick = {
+                            navController.navigate(Routes.ChatPage.createRoute("macAddress"))
+                        },
                         Modifier.align(Alignment.Center)
                     ) {
                         Icon(
@@ -107,7 +109,7 @@ fun MainPage(navController: NavHostController) {
                 }
             }
             Text(
-                text = "Paired Devices",
+                text = "Other Devices",
                 Modifier.padding(vertical = 5.dp),
                 color = Color.Gray,
                 fontSize = 12.sp

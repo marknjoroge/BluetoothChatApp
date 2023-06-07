@@ -37,7 +37,8 @@ val theDevices = HashMap<String, String>()
 
 class MainActivity : ComponentActivity() {
 
-    var bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+    private var bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+    var device: BluetoothDevice? = null
 
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,24 +56,22 @@ class MainActivity : ComponentActivity() {
         }
 
         requestPermissions()
-        if (bluetoothAdapter.isEnabled) {
-            Log.i("ABC", "Bluetooth enabled")
-        } else {
-            Log.i("ABC", "Turn on bluetooth to use app")
-        }
+//        if (bluetoothAdapter.isEnabled) {
+//            Log.i("ABC", "Bluetooth enabled")
+//        } else {
+//            Log.i("ABC", "Turn on bluetooth to use app")
+//        }
 
-        val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
-        pairedDevices?.forEach { device ->
+        val pairedDevices: Set<BluetoothDevice> = bluetoothAdapter.bondedDevices
+        pairedDevices.forEach { device ->
             theDevices[device.name] = device.address
         }
-
-
 
         // TODO: Use this to check if we can get something from it
         Log.i("ABC", "Devices: " + bluetoothAdapter.bondedDevices)
 
         Log.i("ABC", theDevices.toString())
-        Toast.makeText(this, bluetoothAdapter.address, Toast.LENGTH_LONG).show()
+//        Toast.makeText(this, bluetoothAdapter, Toast.LENGTH_LONG).show()
 
         val connectedDevice: BluetoothDevice? = getCurrentConnectedBluetoothDevice(this)
 
@@ -83,13 +82,6 @@ class MainActivity : ComponentActivity() {
                     Manifest.permission.BLUETOOTH_CONNECT
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
                 return
             } else {
 
@@ -160,6 +152,7 @@ class MainActivity : ComponentActivity() {
     }
 
     fun getCurrentConnectedBluetoothDevice(context: Context): BluetoothDevice? {
+        var connectedDevice: BluetoothDevice? = null
         val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         val bluetoothManager = bluetoothAdapter?.getProfileProxy(this, object : BluetoothProfile.ServiceListener {
             override fun onServiceDisconnected(profile: Int) {}
@@ -182,8 +175,12 @@ class MainActivity : ComponentActivity() {
                             // for ActivityCompat#requestPermissions for more details.
                             return
                         }
-                        Log.d(ABC_TAG, "Connected: ${connectedDevices.size}")
+                        Log.d(ABC_TAG, "Connected: ${connectedDevices[0].name}")
+
+                        connectedDevice = connectedDevices[0]
                         Global.connectedDevice = mapOf(connectedDevices[0].name to connectedDevices[0].address)
+                        Global.connectedBluetoothDevice = connectedDevice
+
                         // Perform any necessary actions with the connected device
                     }
                 }
@@ -191,7 +188,7 @@ class MainActivity : ComponentActivity() {
             }
         }, BluetoothProfile.A2DP)
 
-        return null
+        return connectedDevice
     }
 }
 

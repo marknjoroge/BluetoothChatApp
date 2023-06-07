@@ -12,21 +12,54 @@ import androidx.annotation.RequiresApi
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+@RequiresApi(Build.VERSION_CODES.O)
 class ChatActivity(theirMacAddress: String, context: Context) {
 
     private var localContext: Context? = null
-    private var macAddress: String = ""
-    var messages = HashMap<String, String>()
+
+    private var myMacAddress: String = ""
+    private var theirMacAddress: String = ""
+
+    var messages = ArrayList<String>()
     var bluetoothAdapter: BluetoothAdapter? = null
 
     private var btService: BTService? = null
 
+
+    fun populateMessages() {
+        messages.add("20:A4:F6:EA · Knock Knock")
+        messages.add("34:34:5D:A3 · Who's there?")
+        messages.add("20:A4:F6:EA · Amos")
+        messages.add("34:34:5D:A3 · Amos who?")
+        messages.add("20:A4:F6:EA · A mosquito bit me!")
+        messages.add("20:A4:F6:EA · Knock Knock")
+        messages.add("34:34:5D:A3 · Who's there?")
+        messages.add("20:A4:F6:EA · Olive")
+        messages.add("34:34:5D:A3 · Olive who?")
+        messages.add("20:A4:F6:EA · Olive you and I miss you!")
+        messages.add("20:A4:F6:EA · Knock Knock")
+        messages.add("34:34:5D:A3 · Who's there?")
+        messages.add("20:A4:F6:EA · Harry")
+        messages.add("34:34:5D:A3 · Harry who?")
+        messages.add("20:A4:F6:EA · Harry up and answer the door!")
+        messages.add("20:A4:F6:EA · Knock Knock")
+        messages.add("34:34:5D:A3 · Who's there?")
+        messages.add("20:A4:F6:EA · Boo")
+        messages.add("34:34:5D:A3 · Boo who?")
+        messages.add("20:A4:F6:EA · Don't cry, it's just a joke!")
+        messages.add("20:A4:F6:EA · Knock Knock")
+        messages.add("34:34:5D:A3 · Who's there?")
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     val handler = Handler(Handler.Callback { msg ->
         // Handle messages received from the service
         when (msg.what) {
             MESSAGE_READ -> {
                 // Process the received data
                 val data = msg.obj as ByteArray
+
+                addText(data.toString())
                 // Update UI with received data
             }
             MESSAGE_WRITE -> {
@@ -44,7 +77,7 @@ class ChatActivity(theirMacAddress: String, context: Context) {
     init {
         btService = BTService(handler)
         localContext = context
-        macAddress = theirMacAddress
+        this.theirMacAddress = theirMacAddress
         btService = BTService(handler)
 
         btService
@@ -60,12 +93,12 @@ class ChatActivity(theirMacAddress: String, context: Context) {
     @RequiresApi(Build.VERSION_CODES.O)
     fun sendText(text: String) {
         addText(text)
-
+        btService?.ConnectedThread()!!.write(text.toByteArray())
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun addText(text: String) {
-        messages[getTime().toString()] = "$macAddress · $text"
+    fun addText(text: String, macAddress: String = myMacAddress) {
+        messages.add("$macAddress · $text")
     }
 
 //    fun sendDataOverBluetooth(deviceAddress: String, data: String) {

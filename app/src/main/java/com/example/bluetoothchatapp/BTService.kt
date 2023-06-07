@@ -13,6 +13,7 @@ import com.example.bluetoothchatapp.Global
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.lang.reflect.InvocationTargetException
 
 private const val TAG = "MY_APP_DEBUG_TAG"
 
@@ -26,6 +27,8 @@ const val MESSAGE_TOAST: Int = 2
 class BTService(
     private val handler: Handler
 ) {
+
+    var socket: BluetoothSocket? = null
 
     fun getCurrentConnectedBluetoothDevice(context: Context): BluetoothDevice? {
         val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
@@ -61,16 +64,35 @@ class BTService(
         return null
     }
 
-    lateinit var connectedThread: ConnectedThread
-
-    init {
-        connectedThread 
+    fun createBluetoothSocket(connectedDevice: BluetoothDevice): BluetoothSocket? {
+        try {
+            val createRfcommSocket = connectedDevice.javaClass.getMethod(
+                "createRfcommSocket", Int::class.javaPrimitiveType
+            )
+            val socket = createRfcommSocket.invoke(connectedDevice, 1) as BluetoothSocket
+            return socket
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e: NoSuchMethodException) {
+            e.printStackTrace()
+        } catch (e: IllegalAccessException) {
+            e.printStackTrace()
+        } catch (e: InvocationTargetException) {
+            e.printStackTrace()
+        }
+        return null
     }
 
-    inner class ConnectedThread(private val mmSocket: BluetoothSocket) : Thread() {
+//    lateinit var connectedThread: ConnectedThread
 
-        private val mmInStream: InputStream = mmSocket.inputStream
-        private val mmOutStream: OutputStream = mmSocket.outputStream
+    init {
+        socket = Global.connectedBluetoothDevice?.let { createBluetoothSocket(it) }
+    }
+
+    inner class ConnectedThread(private val mmSocket: BluetoothSocket? = socket) : Thread() {
+
+        private val mmInStream: InputStream = mmSocket!!.inputStream
+        private val mmOutStream: OutputStream = mmSocket!!.outputStream
         private val mmBuffer: ByteArray = ByteArray(1024) // mmBuffer store for the stream
 
         override fun run() {
@@ -122,7 +144,7 @@ class BTService(
         // Call this method from the main activity to shut down the connection.
         fun cancel() {
             try {
-                mmSocket.close()
+                mmSocket!!.close()
             } catch (e: IOException) {
                 Log.e(TAG, "Could not close the connect socket", e)
             }
