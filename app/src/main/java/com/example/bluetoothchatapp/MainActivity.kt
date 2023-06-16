@@ -25,7 +25,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.bluetoothchatapp.contollers.Routes
 import com.example.bluetoothchatapp.ui.theme.BluetoothChatAppTheme
+import com.example.bluetoothchatapp.views.ChatPage
+import com.example.bluetoothchatapp.views.MainPage
+import java.lang.reflect.Method
 
 const val REQUEST_ENABLE_BLUETOOTH = 1
 const val REQUEST_DISCOVERABLE = 2
@@ -56,11 +60,10 @@ class MainActivity : ComponentActivity() {
         }
 
         requestPermissions()
-//        if (bluetoothAdapter.isEnabled) {
-//            Log.i("ABC", "Bluetooth enabled")
-//        } else {
-//            Log.i("ABC", "Turn on bluetooth to use app")
-//        }
+
+        Global.myMacAddress = bluetoothAdapter.address
+
+        Log.i(ABC_TAG, Global.myMacAddress)
 
         val pairedDevices: Set<BluetoothDevice> = bluetoothAdapter.bondedDevices
         pairedDevices.forEach { device ->
@@ -71,12 +74,15 @@ class MainActivity : ComponentActivity() {
         Log.i("ABC", "Devices: " + bluetoothAdapter.bondedDevices)
 
         Log.i("ABC", theDevices.toString())
-//        Toast.makeText(this, bluetoothAdapter, Toast.LENGTH_LONG).show()
 
-        val connectedDevice: BluetoothDevice? = getCurrentConnectedBluetoothDevice(this)
+        val connectedDevice: BluetoothDevice? = getCurrentConnectedBluetoothDevice(pairedDevices)
 
         if (connectedDevice != null) {
-            Log.i(ABC_TAG, "Connected ${connectedDevice.toString()}")
+            Log.i(ABC_TAG, "Connected to ${connectedDevice.name}")
+
+            Global.connectedDevice = mapOf(connectedDevice.name to connectedDevice.address)
+            Global.connectedBluetoothDevice = connectedDevice
+
             val deviceName = if (ActivityCompat.checkSelfPermission(
                     this,
                     Manifest.permission.BLUETOOTH_CONNECT
@@ -101,20 +107,13 @@ class MainActivity : ComponentActivity() {
             != PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
             != PackageManager.PERMISSION_GRANTED
-        ) return true
-        return false
+        ) return false
+        return true
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
     private fun requestPermissions() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH)
-            != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN)
-            != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-
+        if (!checkPermissions()) {
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(
@@ -125,7 +124,6 @@ class MainActivity : ComponentActivity() {
                 REQUEST_ENABLE_BLUETOOTH
             )
         } else {
-//            Toast.makeText(this, "Already Granted", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -151,44 +149,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    fun getCurrentConnectedBluetoothDevice(context: Context): BluetoothDevice? {
-        var connectedDevice: BluetoothDevice? = null
-        val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-        val bluetoothManager = bluetoothAdapter?.getProfileProxy(this, object : BluetoothProfile.ServiceListener {
-            override fun onServiceDisconnected(profile: Int) {}
+    fun getCurrentConnectedBluetoothDevice(devices: Set<BluetoothDevice>): BluetoothDevice? {
+        devices.forEach { device ->
+            if (isConnected(device)) return device
+        }
+        return null
+    }
 
-            override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
-                if (profile == BluetoothProfile.A2DP) {
-                    val connectedDevices: List<BluetoothDevice>? = proxy.connectedDevices
-                    if (!connectedDevices.isNullOrEmpty()) {
-                        if (ActivityCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.BLUETOOTH_CONNECT
-                            ) != PackageManager.PERMISSION_GRANTED
-                        ) {
-                            // TODO: Consider calling
-                            //    ActivityCompat#requestPermissions
-                            // here to request the missing permissions, and then overriding
-                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                            //                                          int[] grantResults)
-                            // to handle the case where the user grants the permission. See the documentation
-                            // for ActivityCompat#requestPermissions for more details.
-                            return
-                        }
-                        Log.d(ABC_TAG, "Connected: ${connectedDevices[0].name}")
-
-                        connectedDevice = connectedDevices[0]
-                        Global.connectedDevice = mapOf(connectedDevices[0].name to connectedDevices[0].address)
-                        Global.connectedBluetoothDevice = connectedDevice
-
-                        // Perform any necessary actions with the connected device
-                    }
-                }
-                bluetoothAdapter.closeProfileProxy(profile, proxy)
-            }
-        }, BluetoothProfile.A2DP)
-
-        return connectedDevice
+    private fun isConnected(device: BluetoothDevice): Boolean {
+        return try {
+            val m: Method = device.javaClass.getMethod("isConnected")
+            m.invoke(device) as Boolean
+        } catch (e: Exception) {
+            throw IllegalStateException(e)
+        }
     }
 }
 

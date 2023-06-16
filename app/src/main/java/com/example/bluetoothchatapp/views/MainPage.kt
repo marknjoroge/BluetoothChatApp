@@ -1,16 +1,12 @@
-package com.example.bluetoothchatapp
+package com.example.bluetoothchatapp.views
 
-import android.bluetooth.BluetoothDevice
 import android.content.Intent
 import android.provider.Settings
-import android.widget.Toast
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -18,10 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -43,12 +35,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-
+import com.example.bluetoothchatapp.Global
+import com.example.bluetoothchatapp.contollers.Routes
+import com.example.bluetoothchatapp.theDevices
 
 @Composable
 fun MainPage(navController: NavHostController) {
     var device by remember { mutableStateOf(Global.connectedBluetoothDevice) }
     val context = LocalContext.current
+
+    val connectedName = Global.connectedDevice.keys.elementAt(0)
 
     Box(
         modifier = Modifier
@@ -77,20 +73,20 @@ fun MainPage(navController: NavHostController) {
                 color = Color.Gray,
                 fontSize = 12.sp
             )
-            if (Global.connectedDevice.isEmpty()) {
+            if (connectedName == "") {
                 Box(
                     Modifier
                         .fillMaxWidth()
                         .padding(30.dp)
                 ) {
                     IconButton(
-//                        onClick = {
-//                            val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-//                            context.startActivity(intent)
-//                        },
                         onClick = {
-                            navController.navigate(Routes.ChatPage.createRoute("macAddress"))
+                            val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
+                            context.startActivity(intent)
                         },
+//                        onClick = {
+//                            navController.navigate(Routes.ChatPage.createRoute("macAddress"))
+//                        },
                         Modifier.align(Alignment.Center)
                     ) {
                         Icon(

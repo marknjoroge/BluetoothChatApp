@@ -1,14 +1,15 @@
-package com.example.bluetoothchatapp
+package com.example.bluetoothchatapp.models
 
-import BTService
-import MESSAGE_READ
-import MESSAGE_TOAST
-import MESSAGE_WRITE
+import com.example.bluetoothchatapp.contollers.BTService
+import com.example.bluetoothchatapp.contollers.MESSAGE_READ
+import com.example.bluetoothchatapp.contollers.MESSAGE_TOAST
+import com.example.bluetoothchatapp.contollers.MESSAGE_WRITE
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.os.Build
 import android.os.Handler
 import androidx.annotation.RequiresApi
+import com.example.bluetoothchatapp.Global
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -17,7 +18,8 @@ class ChatActivity(theirMacAddress: String, context: Context) {
 
     private var localContext: Context? = null
 
-    private var myMacAddress: String = ""
+//    private var myMacAddress: String = Global.myMacAddress
+    private var myMacAddress: String = "20:A4:F6:EA"
     private var theirMacAddress: String = ""
 
     var messages = ArrayList<String>()
@@ -75,12 +77,8 @@ class ChatActivity(theirMacAddress: String, context: Context) {
     })
 
     init {
-        btService = BTService(handler)
-        localContext = context
         this.theirMacAddress = theirMacAddress
-        btService = BTService(handler)
-
-        btService
+        btService = BTService(handler, context)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -90,10 +88,11 @@ class ChatActivity(theirMacAddress: String, context: Context) {
         return currentTime.format(formatter)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
+    @RequiresApi(Build.VERSION_CODES.S)
     fun sendText(text: String) {
         addText(text)
-        btService?.ConnectedThread()!!.write(text.toByteArray())
+        btService?.writeToThread(text)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

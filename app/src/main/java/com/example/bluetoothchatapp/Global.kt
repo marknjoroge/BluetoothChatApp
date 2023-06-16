@@ -8,5 +8,6 @@ class Global : Application() {
         @JvmField
         var connectedDevice: Map<String, String> = mapOf("" to "")
         var connectedBluetoothDevice: BluetoothDevice? = null
+        var myMacAddress: String = ""
     }
 }

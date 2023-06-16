@@ -1,4 +1,4 @@
-package com.example.bluetoothchatapp
+package com.example.bluetoothchatapp.contollers
 
 sealed class Routes(val route: String) {
     object MainPage: Routes("main")

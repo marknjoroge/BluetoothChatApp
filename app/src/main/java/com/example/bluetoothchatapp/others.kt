@@ -1,4 +1,4 @@
-//package com.example.bluetoothchatapp
+package com.example.bluetoothchatapp
 //
 //import android.os.Build
 //import androidx.annotation.RequiresApi

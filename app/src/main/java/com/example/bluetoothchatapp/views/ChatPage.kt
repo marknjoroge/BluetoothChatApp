@@ -1,4 +1,4 @@
-package com.example.bluetoothchatapp
+package com.example.bluetoothchatapp.views
 
 import android.content.Context
 import android.os.Build
@@ -29,8 +29,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarColors
-import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -47,6 +46,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.bluetoothchatapp.models.ChatActivity
+import com.example.bluetoothchatapp.Global
 import com.example.bluetoothchatapp.ui.theme.myBubbleColor
 import com.example.bluetoothchatapp.ui.theme.myTextColor
 import com.example.bluetoothchatapp.ui.theme.theirBubbleColor
@@ -61,44 +62,46 @@ fun ChatPage(navController: NavHostController, macAddress: String) {
 
     val context = LocalContext.current
     val chatActivity = ChatActivity(macAddress, context = context)
-    var myText by remember { mutableStateOf("Yoo whatsup") }
+    var myText by remember { mutableStateOf("") }
 
     var messages  = chatActivity.messages
 
     chatActivity.populateMessages()
 
     val listState = rememberLazyListState()
-    val keyAtIndex = Global.connectedDevice.keys.elementAt(0)
-    val connectedMac = Global.connectedDevice[keyAtIndex]
+    val connectedName = Global.connectedDevice.keys.elementAt(0)
+    val connectedMac = Global.connectedDevice[connectedName]
 
-    if (macAddress != connectedMac) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "This device is not connected.",
-                modifier = Modifier.padding(16.dp)
+    val appBarTitle: String = if (macAddress == connectedMac) "Chat with $connectedName" else "No device connected"
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = appBarTitle, color = Color.DarkGray)
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Filled.ArrowBack, "backIcon", tint = myBubbleColor)
+                    }
+                },
+                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color.White)
             )
-        }
-    } else {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(text = "Chat with $macAddress")
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Filled.ArrowBack, "backIcon", tint = myBubbleColor)
-                        }
-                    },
-                    modifier = Modifier
-                        .background(Color.White)
-                )
-            },
-            content = {
+        },
+        content = {
+
+            if (macAddress != connectedMac) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "This device is not connected.",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            } else {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -141,12 +144,17 @@ fun ChatPage(navController: NavHostController, macAddress: String) {
                         ) {
                             OutlinedTextField(
                                 value = myText,
-                                modifier = Modifier.height(60.dp),
+                                modifier = Modifier
+                                    .height(60.dp)
+                                    .weight(5f),
                                 placeholder = { Text("New message", color = Color.DarkGray) },
                                 onValueChange = { newText: String -> myText = newText },
                                 textStyle = TextStyle(color = Color.DarkGray)
                             )
                             IconButton(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .defaultMinSize(minWidth = 70.dp),
                                 onClick = {
                                     chatActivity.sendText(myText)
                                     messages = chatActivity.messages
@@ -166,8 +174,9 @@ fun ChatPage(navController: NavHostController, macAddress: String) {
                     }
                 }
             }
-        )
-    }
+        }
+    )
+
 }
 
 @Composable

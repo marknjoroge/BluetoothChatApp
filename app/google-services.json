@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "729254094355",
+    "project_id": "kplc2-bdafb",
+    "storage_bucket": "kplc2-bdafb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:729254094355:android:9fa38e5289aa46dcb281e6",
+        "android_client_info": {
+          "package_name": "com.example.bluetoothchatapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnyofaYhJmQnH5N51kglBWOPf_Kc9iNug"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:729254094355:android:b0e55c0a733e0291b281e6",
+        "android_client_info": {
+          "package_name": "com.example.kplc2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnyofaYhJmQnH5N51kglBWOPf_Kc9iNug"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
