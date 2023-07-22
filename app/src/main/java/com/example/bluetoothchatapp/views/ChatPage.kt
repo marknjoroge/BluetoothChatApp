@@ -46,16 +46,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.bluetoothchatapp.models.ChatActivity
-import com.example.bluetoothchatapp.Global
+import com.example.bluetoothchatapp.ABC_TAG
+import com.example.bluetoothchatapp.ChatActivity
+import com.example.bluetoothchatapp.utils.Global
 import com.example.bluetoothchatapp.ui.theme.myBubbleColor
 import com.example.bluetoothchatapp.ui.theme.myTextColor
 import com.example.bluetoothchatapp.ui.theme.theirBubbleColor
 import com.example.bluetoothchatapp.ui.theme.theirTextColor
+import kotlinx.coroutines.delay
 
 var myAddress = "20:A4:F6:EA"
 
-@RequiresApi(Build.VERSION_CODES.O)
+//@RequiresApi(Build.VERSION_CODES.O)
+@RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatPage(navController: NavHostController, macAddress: String) {
@@ -64,15 +67,28 @@ fun ChatPage(navController: NavHostController, macAddress: String) {
     val chatActivity = ChatActivity(macAddress, context = context)
     var myText by remember { mutableStateOf("") }
 
-    var messages  = chatActivity.messages
+    var messages by remember { mutableStateOf(chatActivity.messages) }
 
     chatActivity.populateMessages()
 
     val listState = rememberLazyListState()
-    val connectedName = Global.connectedDevice.keys.elementAt(0)
-    val connectedMac = Global.connectedDevice[connectedName]
+    val connectedName by remember { mutableStateOf( Global.connectedDevice.keys.elementAt(0)) }
+    val connectedMac by remember { mutableStateOf( Global.connectedDevice[connectedName]) }
 
     val appBarTitle: String = if (macAddress == connectedMac) "Chat with $connectedName" else "No device connected"
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            chatActivity.getMessages()
+
+            chatActivity.separateAndStore(Global.globalMessages)
+
+            messages = chatActivity.messages
+//            Log.i(ABC_TAG, "Fetching data again ${Global.globalMessages}")
+
+            delay(3000L)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -205,7 +221,8 @@ fun ChatBubble(address: String, message: String) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+//@RequiresApi(Build.VERSION_CODES.O)
+@RequiresApi(Build.VERSION_CODES.S)
 @Preview
 @Composable
 fun Preview() {

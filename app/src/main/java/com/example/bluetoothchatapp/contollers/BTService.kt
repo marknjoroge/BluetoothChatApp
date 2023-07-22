@@ -1,10 +1,7 @@
 package com.example.bluetoothchatapp.contollers
 
 import android.Manifest
-import android.app.Activity
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.content.pm.PackageManager
@@ -14,10 +11,8 @@ import android.os.Handler
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.example.bluetoothchatapp.ABC_TAG
-import com.example.bluetoothchatapp.Global
-import com.example.bluetoothchatapp.REQUEST_ENABLE_BLUETOOTH
+import com.example.bluetoothchatapp.utils.Global
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -31,6 +26,8 @@ private const val TAG = "MY_APP_DEBUG_TAG"
 const val MESSAGE_READ: Int = 0
 const val MESSAGE_WRITE: Int = 1
 const val MESSAGE_TOAST: Int = 2
+
+const val REQUEST_CODE: Int = 9
 // ... (Add other message types here as needed.)
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -66,7 +63,7 @@ class BTService (private val handler: Handler, private val context: Context) {
                 "createRfcommSocket", Int::class.javaPrimitiveType
             )
             val socket = createRfcommSocket.invoke(connectedDevice, 1) as BluetoothSocket
-            if(!socket.isConnected) Log.i(ABC_TAG, "BluetoothSocket: ${socket.toString()}")
+            if(socket.isConnected) Log.i(ABC_TAG, "BluetoothSocket connected: ${socket.toString()}")
             return socket
         } catch (e: IOException) {
             e.printStackTrace()
@@ -92,7 +89,7 @@ class BTService (private val handler: Handler, private val context: Context) {
         connectedThread.start()
     }
 
-    inner class ConnectedThread(private var mmSocket: BluetoothSocket) : Thread() {
+    private inner class ConnectedThread(private var mmSocket: BluetoothSocket) : Thread() {
 
         private var mmInStream: InputStream = mmSocket.inputStream
         private var mmOutStream: OutputStream = mmSocket.outputStream
@@ -105,19 +102,18 @@ class BTService (private val handler: Handler, private val context: Context) {
 
             if (ActivityCompat.checkSelfPermission(
                     context,
-//                    Manifest.permission.BLUETOOTH_CONNECT
-//                ) != PackageManager.PERMISSION_GRANTED
-//                || ActivityCompat.checkSelfPermission(
-//                    context,
-//                    Manifest.permission.BLUETOOTH_ADMIN
-//                ) != PackageManager.PERMISSION_GRANTED
-//                || ActivityCompat.checkSelfPermission(
-//                    context,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) != PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.BLUETOOTH_ADMIN
+                ) != PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(
+                    context,
                     Manifest.permission.BLUETOOTH
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 Log.i(ABC_TAG, "No permission. Cannot connect socket")
-                requestPermissions()
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
                 // here to request the missing permissions, and then overriding
@@ -127,7 +123,7 @@ class BTService (private val handler: Handler, private val context: Context) {
             } else {
                 Log.i(ABC_TAG, "permission. Can connect")
             }
-            mmSocket.connect()
+//            mmSocket.connect()
             if(mmSocket.isConnected) Log.i(ABC_TAG, "socket connected")
             else Log.i(ABC_TAG, "socket not connected")
 
@@ -185,7 +181,6 @@ class BTService (private val handler: Handler, private val context: Context) {
                 Log.e(TAG, "Could not close the connect socket", e)
             }
         }
-
     }
 
 //    @RequiresApi(Build.VERSION_CODES.S)
@@ -211,29 +206,4 @@ class BTService (private val handler: Handler, private val context: Context) {
 //        return socket
 //    }
 
-    @RequiresApi(Build.VERSION_CODES.S)
-    private fun requestPermissions() {
-
-        val permissions = arrayOf(
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_ADMIN,
-            Manifest.permission.BLUETOOTH
-        )
-
-        val requestCode = 1
-        Log.i(ABC_TAG, "Requesting permissions")
-        ActivityCompat.requestPermissions(context as Activity, permissions, requestCode)
-    }
-
-    fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        when (requestCode) {
-            1 -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.i(ABC_TAG, "Permissions granted")
-                } else {
-                    Log.i(ABC_TAG, "Permissions denied")
-                }
-            }
-        }
-    }
 }

@@ -3,8 +3,6 @@ package com.example.bluetoothchatapp
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothProfile
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -27,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.bluetoothchatapp.contollers.Routes
 import com.example.bluetoothchatapp.ui.theme.BluetoothChatAppTheme
+import com.example.bluetoothchatapp.utils.Global
 import com.example.bluetoothchatapp.views.ChatPage
 import com.example.bluetoothchatapp.views.MainPage
 import java.lang.reflect.Method
@@ -45,8 +44,10 @@ class MainActivity : ComponentActivity() {
     var device: BluetoothDevice? = null
 
     @RequiresApi(Build.VERSION_CODES.S)
+//    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             BluetoothChatAppTheme {
                 Surface(
@@ -102,10 +103,10 @@ class MainActivity : ComponentActivity() {
 
     fun checkPermissions(): Boolean {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH)
-            != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN)
-            != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
+            != PackageManager.PERMISSION_GRANTED
+            || ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN)
+            != PackageManager.PERMISSION_GRANTED
+            || ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
             != PackageManager.PERMISSION_GRANTED
         ) return false
         return true
@@ -127,6 +128,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -166,10 +168,38 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun NavigationAppHost(navController: NavHostController) {
     val ctx = LocalContext.current
+
+//    val launcher = rememberLauncherForActivityResult(
+//        ActivityResultContracts.RequestPermission()
+//    ) { isGranted: Boolean ->
+//        if (isGranted) {
+//            // Permission Accepted: Do something
+//            Log.d(ABC_TAG,"PERMISSION GRANTED")
+//        } else {
+//            // Permission Denied: Do something
+//            Log.d(ABC_TAG,"PERMISSION DENIED")
+//        }
+//    }
+
+//    when (PackageManager.PERMISSION_GRANTED) {
+//        ContextCompat.checkSelfPermission(
+//            ctx,
+//            Manifest.permission.BLUETOOTH_CONNECT
+//        ) -> {
+////            navController.navigate(Routes.ChatPage.createRoute(macAddress))
+//            // Some works that require permission
+//            Log.d(ABC_TAG,"Code requires permission")
+//        }
+//        else -> {
+//            // Asking for permission
+//            Log.d(ABC_TAG,"Asking for permission")
+//            launcher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+//        }
+//    }
 
     NavHost(navController = navController, startDestination = "main") {
         composable(Routes.MainPage.route) { MainPage(navController) }
